@@ -6,7 +6,7 @@ mongoose
     .connect(MONGO_URI)
     .then((x) => {
         console.log(
-            `Conncected to Mongo! Database name: "${x.conncections[0].name}"`
+            `Conncected to Mongo! Database name: "${x.connections[0].name}"`
         )
     })
     .catch((err) => console.log('Error connecting to mongo:', err))

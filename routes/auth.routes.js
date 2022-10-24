@@ -31,7 +31,7 @@ router.post('/signup', (req,res,next) => {
     })
     User.create({
         email,
-        usernamej,
+        username,
         password: bcryptjs.hashSync(password)
     })
     .then(createdUser => res.json({user: createdUser}))
@@ -49,3 +49,43 @@ router.post('/signup', (req,res,next) => {
     })
     })
 })
+
+router.post('/login', (req,res,next) => {
+    const {email,username,password} = req.body
+    if(!email || !password) {
+        res.json({error: 'Email and password required'})
+        return
+    }
+    User.findOne({email})
+        .then(foundUser => {
+            if(!foundUser){
+                res.json({error: 'invalid email or password'})
+                return
+            }
+            const isValidPassword = bcryptjs.compareSync(password, foundUser.password)
+            if(!isValidPassword){
+                res.json({error: 'Invalid email or password'})
+                return
+            }
+            const payload = {
+                email: foundUser.email,
+                _id: foundUser._id
+            }
+            const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+                expiresIn: '6h',
+                algorithm: 'HS256'
+            })
+            res.json({authToken})
+        })
+        .catch(err => {
+            console.log(err)
+            res.json({error: err})
+        })
+})
+
+router.get('/verify', isAuthenticated, (req,res,next) => {
+    console.log('Token Payload:', req.payload)
+    res.json(req.payload)
+})
+
+module.exports = router
